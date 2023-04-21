@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <!--<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">-->
+    <title>Qiguang CHEN</title>
+    <link rel="stylesheet" type="text/css" href="style.css">
+  </head>
+  <body>
+
+    <!-- idea: have a javascript animated loss function converging in the header? :p -->
+    <div id="dhead" class="container">
+      <div class="row">
+        <div id="dpic">
+          <img src="my_img.jpg" class="ppic" />
+        </div>
+        <div id="ddesc">
+          <h1>Qiguang CHEN</h1>
+          <h2>This page is not ready.</h2>
+          <div id="dico">
+             <!--[<a href="files/gary_choi_cv.pdf" target="_blank">CV</a>]-->
+			 [<a href="https://scholar.google.com/citations?user=cO948zUAAAAJ&hl=en" target="_blank">Google Scholar</a>] 
+			 [<a href="https://orcid.org/0000-0002-5657-2847" target="_blank">ORCID</a>] 
+            </div>
+          <div id="demail"></div> <!-- will reveal email -->
+        </div>
+      </div>
+    </div>
+
+    <hr>
+
+    <div id="history" class="container">
+      <div class="entry row">
+        <div class="timespan">
+          2021 - present
+        </div>
+        <div class="ico">
+          <div class="entry-dot"></div>
+          <img src="CUHK_logo.jpg" width="500"/>
+        </div>
+        <div class="desc">
+          I am now a PhD student at the Chinese University of Hong Kong.
+        </div>
+      </div>
+
+      <div class="entry row">
+        <div class="timespan">
+          2020 - 2021
+        </div>
+        <div class="ico">
+          <div class="entry-dot"></div>
+          <img src="CUHK_logo.jpg" width="500"/>
+        </div>
+        <div class="desc">
+          Research assistant at the Chinese University of Hong Kong.
+        </div>
+      </div>
+
+      <div class="entry row">
+        <div class="timespan">
+          2019 - 2020
+        </div>
+        <div class="ico">
+          <div class="entry-dot"></div>
+          <img src="CUHK_logo.jpg" width="500"/>
+        </div>
+        <div class="desc">
+          MSc in Mathematics at the Chinese University of Hong Kong.
+        </div>
+      </div>
+
+      <div class="entry row">
+        <div class="timespan">
+          2015 - 2019
+        </div>
+        <div class="ico">
+          <div class="entry-dot"></div>
+          <img src="GDUT_logo.jpg" width="500"/>
+        </div>
+        <div class="desc">
+          BSC at Guangdong University of Technology in Opto-Electronics Information Science and Engineering.
+        </div>
+      </div>
+    </div>
+
+    <div style="background-color: #eee; padding-top: 1px; margin-top: 10px;">
+      <div id="featured-talks" class="container">
+        <div class="ctitle">featured talks</div>
+        <div class="row">
+          <div class="card">
+            <a href="https://www.therobotbrains.ai/who-is-andrej-karpathy">
+              <div class="ccimg"><img src="assets/robotbrains.jpg" /></div>
+            </a>
+            <div class="cdesc">Robot Brains podcast with Pieter Abbeel</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <div class="container">
+      <div class="ctitle">teaching</div>
+      <div>
+        blank.
+        <ul class="tul">
+          <li class="til tilb"><a href="https://www.youtube.com/">videos</a></li>
+          <li class="til"><a href="https://www.reddit.com/...">blank</a></li>
+        </ul>
+      </div>
+      <img src="assets/cs231n_class.jpg" style="max-width:100%; border-radius:10px;"/>
+    </div>
+
+    <div style="background-color: #eee; padding-top: 1px; margin-top: 50px; padding-bottom: 30px;">
+    <div class="container">
+      <div class="ctitle">featured writing</div>
+      <ul class="nodot">
+        <li>Mar 2021 <a href="https://karpathy.github.io/2021/06/21/blockchain/">A from-scratch tour of Bitcoin in Python</a></li>
+      </ul>
+    </div>
+    </div>
+
+    <div id="pet-projects" class="container">
+      <div class="ctitle">projects</div>
+
+      <div class="project">
+        <div class="pico"><img src="assets/puppy.jpg" /></div>
+        <div class="pdesc"><a href="https://github.com/im-ki/blank">micrograd</a> blank</div>
+        <div class="pend"></div>
+      </div>
+
+    </div>
+
+    <div class="container">
+      <div class="ctitle">publications</div>
+
+      <div class="pub">
+        <div class="pub-title"><a href="http://proceedings.mlr.press/v70/shi17a/shi17a.pdf">World of Bits: An Open-Domain Platform for Web-Based Agents</a></div>
+        <div class="pub-venue">ICML 2017</div>
+        <div class="pub-authors">To be completed</div>
+      </div>
+
+      <!--<div>
+        <br>
+        Also on <a href="https://scholar.google.com/citations?user=l8WuQJgAAAAJ&hl=en&oi=ao">Google Scholar</a>
+      </div>-->
+    </div>
+
+    <div class="container">
+      <div class="ctitle">misc unsorted</div>
+      <ul style="padding-left: 10px;">
+        <li><a href="zero-to-hero.html">Neural Networks: Zero To Hero lecture series</a></li>
+      </ul>
+    </div>
+
+    <br><br><br><br><br><br><br><br><br><br><br>
+
+    <!-- attempt hiding from spambots :p -->
+    <script type="text/javascript">
+      var e_is_shown = false;
+      document.getElementById('iemail').addEventListener("click", function(){
+        let demail = document.getElementById('demail');
+        demail.innerHTML = 'im.ki' + ' _at_ ' + 'foxmail' + '.com';
+        demail.style.opacity = e_is_shown ? 0 : 1;
+        e_is_shown = !e_is_shown;
+      })
+    </script>
+  </body>
+</html>

@@ -1,0 +1,20 @@
+---
+title: PAC Information
+date: 2018-08-31 16:33:07
+tags: [PAC]
+---
+
+Information about PAC2017 and 爱国敬业队, GDUT               
+<!-- more -->
+Written by **Ki Qiguang Chen**.
+
+# 1. Code
+There are three versions of the code in my GitHub repositories.             
+Please choose a version and click the hyperlinks below to view:              
+[***Serial version***](https://github.com/im-ki/PAC/tree/SerialVersion) realizes a simple neural network framework in C Language.        
+[***Parallel version***](https://github.com/im-ki/PAC/tree/DataParallelism) utilizes the TianHe-2 supercomputer's multi-cores to accelerate the neural network's training process with data parallelism.          
+[***Python version***](https://github.com/im-ki/PAC/tree/Python) is used to figure out the optimal parameters.
+
+# 2. About the competition
+[***Introduction to Parallel Application Challenge***](http://www.pac-hpc.com/index.php?m=content&c=index&a=lists&catid=78)     
+[***PAC2017 Review***](http://www.pac-hpc.com/index.php?m=content&c=index&a=show&catid=125&id=25)

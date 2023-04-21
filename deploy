@@ -1,0 +1,7 @@
+#!/bin/sh
+rm -rf .deploy_git
+# rm -rf themes/next/.git
+mv .git ../blog_git_temp
+hexo g -d
+mv ../blog_git_temp ./.git
+

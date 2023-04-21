@@ -1,0 +1,11 @@
+/public
+/.deploy_git
+/.git
+/node_modules
+.DS_Store
+Thumbs.db
+db.json
+package-lock.json
+*.log
+public/
+.deploy*/
