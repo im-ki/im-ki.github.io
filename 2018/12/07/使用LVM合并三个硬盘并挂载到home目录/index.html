@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"yoursite.com","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":-1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="目标：服务器里有三个硬盘，想要把三个硬盘合成一个盘，作为home目录，用于存储数据。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="使用LVM合并三个硬盘并挂载到home目录">
+<meta property="og:url" content="http://yoursite.com/2018/12/07/%E4%BD%BF%E7%94%A8LVM%E5%90%88%E5%B9%B6%E4%B8%89%E4%B8%AA%E7%A1%AC%E7%9B%98%E5%B9%B6%E6%8C%82%E8%BD%BD%E5%88%B0home%E7%9B%AE%E5%BD%95/index.html">
+<meta property="og:site_name" content="Ki&#39;s Blog">
+<meta property="og:description" content="目标：服务器里有三个硬盘，想要把三个硬盘合成一个盘，作为home目录，用于存储数据。">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2018-12-07T13:27:25.000Z">
+<meta property="article:modified_time" content="2023-04-16T09:29:15.917Z">
+<meta property="article:author" content="Ki Qiguang Chen">
+<meta property="article:tag" content="Linux">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://yoursite.com/2018/12/07/%E4%BD%BF%E7%94%A8LVM%E5%90%88%E5%B9%B6%E4%B8%89%E4%B8%AA%E7%A1%AC%E7%9B%98%E5%B9%B6%E6%8C%82%E8%BD%BD%E5%88%B0home%E7%9B%AE%E5%BD%95/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+
+  <title>使用LVM合并三个硬盘并挂载到home目录 | Ki's Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <a href="https://github.com/im-ki" target="_blank"><img style="position: absolute; top: 0; right: 0; border: 0;" src="/images/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"></a>
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Ki's Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">Room of Requirement</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/cv/" rel="section"><i class="fa fa-user fa-fw"></i>About</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags<span class="badge">12</span></a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives<span class="badge">30</span></a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>Search
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="Searching..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/12/07/%E4%BD%BF%E7%94%A8LVM%E5%90%88%E5%B9%B6%E4%B8%89%E4%B8%AA%E7%A1%AC%E7%9B%98%E5%B9%B6%E6%8C%82%E8%BD%BD%E5%88%B0home%E7%9B%AE%E5%BD%95/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/blog-logo.jpg">
+      <meta itemprop="name" content="Ki Qiguang Chen">
+      <meta itemprop="description" content="梦想就像一颗蛋<br>由外而内打破是压力<br>由内而外打破是生命">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ki's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          使用LVM合并三个硬盘并挂载到home目录
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2018-12-07 21:27:25" itemprop="dateCreated datePublished" datetime="2018-12-07T21:27:25+08:00">2018-12-07</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2023-04-16 17:29:15" itemprop="dateModified" datetime="2023-04-16T17:29:15+08:00">2023-04-16</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>目标：服务器里有三个硬盘，想要把三个硬盘合成一个盘，作为home目录，用于存储数据。 <span id="more"></span></p>
+<h2 id="建立lvm卷">1、建立LVM卷</h2>
+<h3 id="使用fdisk--l命令查看机器的物理磁盘">使用fdisk -l命令查看机器的物理磁盘</h3>
+<h4 id="可以看到有三个硬盘分别为devsdb1-devsdc1-devsdd1">可以看到有三个硬盘分别为/dev/sdb1, /dev/sdc1, /dev/sdd1</h4>
+<h3 id="使用pvcreate将三个物理磁盘加入物理卷">使用pvcreate将三个物理磁盘加入物理卷</h3>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">$ pvcreate  /dev/sdb1</span><br><span class="line"> Physical volume <span class="string">&quot;/dev/sdb1&quot;</span> successfully created</span><br><span class="line">$ pvcreate  /dev/sdc1</span><br><span class="line"> Physical volume <span class="string">&quot;/dev/sdc1&quot;</span> successfully created</span><br><span class="line">$ pvcreate  /dev/sdd1</span><br><span class="line"> Physical volume <span class="string">&quot;/dev/sdd1&quot;</span> successfully created</span><br></pre></td></tr></table></figure>
+<h3 id="创建逻辑卷组diskgroup并将devsdc1和devsdd1加入其中">创建逻辑卷组diskgroup，并将/dev/sdc1和/dev/sdd1加入其中</h3>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">$ vgcreate diskgroup /dev/sdb1</span><br><span class="line">  Volume group <span class="string">&quot;diskgroup&quot;</span> successfully created</span><br><span class="line">$ vgextend diskgroup /dev/sdc1</span><br><span class="line">  Volume group <span class="string">&quot;diskgroup&quot;</span> successfully extended</span><br><span class="line">$ vgextend diskgroup /dev/sdd1</span><br><span class="line">  Volume group <span class="string">&quot;diskgroup&quot;</span> successfully extended</span><br></pre></td></tr></table></figure>
+<h3 id="使用pvdisplay查看devsdb-devsdc的free-pe">使用pvdisplay查看/dev/sdb /dev/sdc的Free PE</h3>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line">$ pvdisplay</span><br><span class="line">  --- Physical volume ---</span><br><span class="line">  PV Name               /dev/sdb1</span><br><span class="line">  VG Name               diskgroup</span><br><span class="line">  PV Size               931.51 GiB / not usable 4.00 MiB</span><br><span class="line">  Allocatable           <span class="built_in">yes</span> (but full)</span><br><span class="line">  PE Size               4.00 MiB</span><br><span class="line">  Total PE              238466</span><br><span class="line">  Free PE               0</span><br><span class="line">  Allocated PE          238466</span><br><span class="line">  PV UUID               eyz1EB-nqCw-LHi2-VvAh-KWQw-QhEP-JgpHSL</span><br><span class="line">   </span><br><span class="line">  --- Physical volume ---</span><br><span class="line">  PV Name               /dev/sdc1</span><br><span class="line">  VG Name               diskgroup</span><br><span class="line">  PV Size               298.09 GiB / not usable 1.84 MiB</span><br><span class="line">  Allocatable           <span class="built_in">yes</span> (but full)</span><br><span class="line">  PE Size               4.00 MiB</span><br><span class="line">  Total PE              76310</span><br><span class="line">  Free PE               0</span><br><span class="line">  Allocated PE          76310</span><br><span class="line">  PV UUID               gAT2xS-dv3c-y8uj-9MAF-WV0d-RxCc-cVFuUC</span><br><span class="line">   </span><br><span class="line">  --- Physical volume ---</span><br><span class="line">  PV Name               /dev/sdd1</span><br><span class="line">  VG Name               diskgroup</span><br><span class="line">  PV Size               298.09 GiB / not usable 4.00 MiB</span><br><span class="line">  Allocatable           <span class="built_in">yes</span> (but full)</span><br><span class="line">  PE Size               4.00 MiB</span><br><span class="line">  Total PE              76310</span><br><span class="line">  Free PE               0</span><br><span class="line">  Allocated PE          76310</span><br><span class="line">  PV UUID               l045Td-ABgH-9DSv-ymg4-82gj-wXs9-MNb2QG</span><br></pre></td></tr></table></figure>
+<h3 id="使用vgdisplay查看两块物理磁盘合并后的free-pe-size大小通用为391086">使用vgdisplay查看两块物理磁盘合并后的Free PE SIZE大小通用为391086</h3>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">$ vgdisplay</span><br><span class="line">  --- Volume group ---</span><br><span class="line">  VG Name               diskgroup</span><br><span class="line">  System ID             </span><br><span class="line">  Format                lvm2</span><br><span class="line">  Metadata Areas        3</span><br><span class="line">  Metadata Sequence No  4</span><br><span class="line">  VG Access             <span class="built_in">read</span>/write</span><br><span class="line">  VG Status             resizable</span><br><span class="line">  MAX LV                0</span><br><span class="line">  Cur LV                1</span><br><span class="line">  Open LV               1</span><br><span class="line">  Max PV                0</span><br><span class="line">  Cur PV                3</span><br><span class="line">  Act PV                3</span><br><span class="line">  VG Size               1.49 TiB</span><br><span class="line">  PE Size               4.00 MiB</span><br><span class="line">  Total PE              391086</span><br><span class="line">  Alloc PE / Size       391086 / 1.49 TiB</span><br><span class="line">  Free  PE / Size       0 / 0   </span><br><span class="line">  VG UUID               7HUui6-rRDa-24io-tiS0-fIB6-KCaP-EaeJ9z</span><br></pre></td></tr></table></figure>
+<h3 id="然后创建卷lvcreate--l-391086--n-vg01-diskgroup-其中391086为free-pe-size的大小diskgroup-为创建的卷组名">然后创建卷：lvcreate -l +391086 -n vg01 diskgroup ，其中391086为Free PE SIZE的大小，diskgroup 为创建的卷组名</h3>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ lvcreate -l +391086 -n vg01 diskgroup</span><br><span class="line"> Logical volume <span class="string">&quot;vg01&quot;</span> created</span><br></pre></td></tr></table></figure>
+<h3 id="使用lvdisplay命令获取到lv-path-devdiskgroupvg01并使用mkfs命令对其进行格式化">使用lvdisplay命令获取到LV Path /dev/diskgroup/vg01，并使用mkfs命令对其进行格式化</h3>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">$ lvdisplay</span><br><span class="line">  --- Logical volume ---</span><br><span class="line">  LV Path                /dev/diskgroup/vg01</span><br><span class="line">  LV Name                vg01</span><br><span class="line">  VG Name                diskgroup</span><br><span class="line">  LV UUID                671ZPP-uXtN-lmoz-N2oU-WdTT-xONu-W3aknc</span><br><span class="line">  LV Write Access        <span class="built_in">read</span>/write</span><br><span class="line">  LV Creation host, time weixin-System-Product-Name, 2018-12-07 20:28:55 +0800</span><br><span class="line">  LV Status              available</span><br><span class="line">  <span class="comment"># open                 1</span></span><br><span class="line">  LV Size                1.49 TiB</span><br><span class="line">  Current LE             391086</span><br><span class="line">  Segments               3</span><br><span class="line">  Allocation             inherit</span><br><span class="line">  Read ahead sectors     auto</span><br><span class="line">  - currently <span class="built_in">set</span> to     256</span><br><span class="line">  Block device           253:0</span><br><span class="line">$ mkfs -t ext4 /dev/diskgroup/vg01</span><br></pre></td></tr></table></figure>
+<h2 id="挂载到home目录">2、挂载到home目录</h2>
+<h3 id="新建一个home1目录">新建一个home1目录</h3>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ <span class="built_in">cd</span> /</span><br><span class="line">$ <span class="built_in">mkdir</span> /home1</span><br></pre></td></tr></table></figure>
+<h3 id="挂载">挂载</h3>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ mount /dev/diskgroup/vg01 /home1</span><br></pre></td></tr></table></figure>
+<h3 id="移动home目录下的所有东西到home1">移动home目录下的所有东西到home1</h3>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ <span class="built_in">mv</span> /home/* /home1/</span><br></pre></td></tr></table></figure>
+<h3 id="删除home目录卸载vg01将home1重命名为home重新挂载">删除home目录，卸载vg01，将home1重命名为home，重新挂载</h3>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ <span class="built_in">rm</span> -r home</span><br><span class="line">$ umount home1</span><br><span class="line">$ <span class="built_in">mv</span> home1 home</span><br><span class="line">$ mount /dev/diskgroup/vg01 /home</span><br></pre></td></tr></table></figure>
+<h2 id="设置开机挂载">3、设置开机挂载</h2>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ vi /etc/fstab</span><br></pre></td></tr></table></figure>
+<p>在文件末尾加上以下内容 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">/dev/diskgroup/vg01 /home ext4 defaults 0 1</span><br></pre></td></tr></table></figure></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Linux/" rel="tag"># Linux</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2018/08/31/PAC-Information/" rel="prev" title="PAC Information">
+      <i class="fa fa-chevron-left"></i> PAC Information
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2018/12/08/%E9%87%8D%E8%A3%85%E7%B3%BB%E7%BB%9F%E5%90%8E%E6%81%A2%E5%A4%8Dhexo%E5%8D%9A%E5%AE%A2/" rel="next" title="重装系统后恢复hexo博客(Linux)">
+      重装系统后恢复hexo博客(Linux) <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BB%BA%E7%AB%8Blvm%E5%8D%B7"><span class="nav-number">1.</span> <span class="nav-text">1、建立LVM卷</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8fdisk--l%E5%91%BD%E4%BB%A4%E6%9F%A5%E7%9C%8B%E6%9C%BA%E5%99%A8%E7%9A%84%E7%89%A9%E7%90%86%E7%A3%81%E7%9B%98"><span class="nav-number">1.1.</span> <span class="nav-text">使用fdisk -l命令查看机器的物理磁盘</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%8F%AF%E4%BB%A5%E7%9C%8B%E5%88%B0%E6%9C%89%E4%B8%89%E4%B8%AA%E7%A1%AC%E7%9B%98%E5%88%86%E5%88%AB%E4%B8%BAdevsdb1-devsdc1-devsdd1"><span class="nav-number">1.1.1.</span> <span class="nav-text">可以看到有三个硬盘分别为&#x2F;dev&#x2F;sdb1, &#x2F;dev&#x2F;sdc1, &#x2F;dev&#x2F;sdd1</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8pvcreate%E5%B0%86%E4%B8%89%E4%B8%AA%E7%89%A9%E7%90%86%E7%A3%81%E7%9B%98%E5%8A%A0%E5%85%A5%E7%89%A9%E7%90%86%E5%8D%B7"><span class="nav-number">1.2.</span> <span class="nav-text">使用pvcreate将三个物理磁盘加入物理卷</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%9B%E5%BB%BA%E9%80%BB%E8%BE%91%E5%8D%B7%E7%BB%84diskgroup%E5%B9%B6%E5%B0%86devsdc1%E5%92%8Cdevsdd1%E5%8A%A0%E5%85%A5%E5%85%B6%E4%B8%AD"><span class="nav-number">1.3.</span> <span class="nav-text">创建逻辑卷组diskgroup，并将&#x2F;dev&#x2F;sdc1和&#x2F;dev&#x2F;sdd1加入其中</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8pvdisplay%E6%9F%A5%E7%9C%8Bdevsdb-devsdc%E7%9A%84free-pe"><span class="nav-number">1.4.</span> <span class="nav-text">使用pvdisplay查看&#x2F;dev&#x2F;sdb &#x2F;dev&#x2F;sdc的Free PE</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8vgdisplay%E6%9F%A5%E7%9C%8B%E4%B8%A4%E5%9D%97%E7%89%A9%E7%90%86%E7%A3%81%E7%9B%98%E5%90%88%E5%B9%B6%E5%90%8E%E7%9A%84free-pe-size%E5%A4%A7%E5%B0%8F%E9%80%9A%E7%94%A8%E4%B8%BA391086"><span class="nav-number">1.5.</span> <span class="nav-text">使用vgdisplay查看两块物理磁盘合并后的Free PE SIZE大小通用为391086</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%84%B6%E5%90%8E%E5%88%9B%E5%BB%BA%E5%8D%B7lvcreate--l-391086--n-vg01-diskgroup-%E5%85%B6%E4%B8%AD391086%E4%B8%BAfree-pe-size%E7%9A%84%E5%A4%A7%E5%B0%8Fdiskgroup-%E4%B8%BA%E5%88%9B%E5%BB%BA%E7%9A%84%E5%8D%B7%E7%BB%84%E5%90%8D"><span class="nav-number">1.6.</span> <span class="nav-text">然后创建卷：lvcreate -l +391086 -n vg01 diskgroup ，其中391086为Free PE SIZE的大小，diskgroup 为创建的卷组名</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8lvdisplay%E5%91%BD%E4%BB%A4%E8%8E%B7%E5%8F%96%E5%88%B0lv-path-devdiskgroupvg01%E5%B9%B6%E4%BD%BF%E7%94%A8mkfs%E5%91%BD%E4%BB%A4%E5%AF%B9%E5%85%B6%E8%BF%9B%E8%A1%8C%E6%A0%BC%E5%BC%8F%E5%8C%96"><span class="nav-number">1.7.</span> <span class="nav-text">使用lvdisplay命令获取到LV Path &#x2F;dev&#x2F;diskgroup&#x2F;vg01，并使用mkfs命令对其进行格式化</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%8C%82%E8%BD%BD%E5%88%B0home%E7%9B%AE%E5%BD%95"><span class="nav-number">2.</span> <span class="nav-text">2、挂载到home目录</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%96%B0%E5%BB%BA%E4%B8%80%E4%B8%AAhome1%E7%9B%AE%E5%BD%95"><span class="nav-number">2.1.</span> <span class="nav-text">新建一个home1目录</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%8C%82%E8%BD%BD"><span class="nav-number">2.2.</span> <span class="nav-text">挂载</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%A7%BB%E5%8A%A8home%E7%9B%AE%E5%BD%95%E4%B8%8B%E7%9A%84%E6%89%80%E6%9C%89%E4%B8%9C%E8%A5%BF%E5%88%B0home1"><span class="nav-number">2.3.</span> <span class="nav-text">移动home目录下的所有东西到home1</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%A0%E9%99%A4home%E7%9B%AE%E5%BD%95%E5%8D%B8%E8%BD%BDvg01%E5%B0%86home1%E9%87%8D%E5%91%BD%E5%90%8D%E4%B8%BAhome%E9%87%8D%E6%96%B0%E6%8C%82%E8%BD%BD"><span class="nav-number">2.4.</span> <span class="nav-text">删除home目录，卸载vg01，将home1重命名为home，重新挂载</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%AE%BE%E7%BD%AE%E5%BC%80%E6%9C%BA%E6%8C%82%E8%BD%BD"><span class="nav-number">3.</span> <span class="nav-text">3、设置开机挂载</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Ki Qiguang Chen"
+      src="/images/blog-logo.jpg">
+  <p class="site-author-name" itemprop="name">Ki Qiguang Chen</p>
+  <div class="site-description" itemprop="description">梦想就像一颗蛋<br>由外而内打破是压力<br>由内而外打破是生命</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">30</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">12</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2018 – 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Ki Qiguang Chen</span>
+</div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+
+</body>
+</html>

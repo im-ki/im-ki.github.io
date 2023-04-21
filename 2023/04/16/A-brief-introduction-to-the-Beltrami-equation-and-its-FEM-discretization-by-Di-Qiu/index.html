@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"yoursite.com","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":-1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="You can read the original post here. The post is protected under Creative Commons Attribution 4.0 International License. This post is an exposition to some of the background material and details of th">
+<meta property="og:type" content="article">
+<meta property="og:title" content="A brief introduction to the Beltrami equation and its FEM discretization (by Di Qiu)">
+<meta property="og:url" content="http://yoursite.com/2023/04/16/A-brief-introduction-to-the-Beltrami-equation-and-its-FEM-discretization-by-Di-Qiu/index.html">
+<meta property="og:site_name" content="Ki&#39;s Blog">
+<meta property="og:description" content="You can read the original post here. The post is protected under Creative Commons Attribution 4.0 International License. This post is an exposition to some of the background material and details of th">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://yoursite.com/2023/04/16/A-brief-introduction-to-the-Beltrami-equation-and-its-FEM-discretization-by-Di-Qiu/faceparametrization.png">
+<meta property="article:published_time" content="2023-04-16T13:35:01.000Z">
+<meta property="article:modified_time" content="2023-04-17T04:04:57.964Z">
+<meta property="article:author" content="Ki Qiguang Chen">
+<meta property="article:tag" content="complex analysis">
+<meta property="article:tag" content="discrete conformal geometry">
+<meta property="article:tag" content="numerical methods">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://yoursite.com/2023/04/16/A-brief-introduction-to-the-Beltrami-equation-and-its-FEM-discretization-by-Di-Qiu/faceparametrization.png">
+
+<link rel="canonical" href="http://yoursite.com/2023/04/16/A-brief-introduction-to-the-Beltrami-equation-and-its-FEM-discretization-by-Di-Qiu/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+
+  <title>A brief introduction to the Beltrami equation and its FEM discretization (by Di Qiu) | Ki's Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <a href="https://github.com/im-ki" target="_blank"><img style="position: absolute; top: 0; right: 0; border: 0;" src="/images/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"></a>
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Ki's Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">Room of Requirement</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/cv/" rel="section"><i class="fa fa-user fa-fw"></i>About</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags<span class="badge">12</span></a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives<span class="badge">30</span></a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>Search
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="Searching..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2023/04/16/A-brief-introduction-to-the-Beltrami-equation-and-its-FEM-discretization-by-Di-Qiu/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/blog-logo.jpg">
+      <meta itemprop="name" content="Ki Qiguang Chen">
+      <meta itemprop="description" content="梦想就像一颗蛋<br>由外而内打破是压力<br>由内而外打破是生命">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ki's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          A brief introduction to the Beltrami equation and its FEM discretization (by Di Qiu)
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2023-04-16 21:35:01" itemprop="dateCreated datePublished" datetime="2023-04-16T21:35:01+08:00">2023-04-16</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2023-04-17 12:04:57" itemprop="dateModified" datetime="2023-04-17T12:04:57+08:00">2023-04-17</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p><em>You can read the original post <a target="_blank" rel="noopener" href="http://sylqiu.blogspot.com/2017/02/linear-beltrami-solver.html">here</a>. The post is protected under Creative Commons Attribution 4.0 International License.</em></p>
+<p>This post is an exposition to some of the background material and details of the linear Beltrami solver, which is an indispensable tool for my group of research. Interested readers can find relevant codes on <a target="_blank" rel="noopener" href="http://www.math.cuhk.edu.hk/~lmlui/gpp/">Lui's computational geometry lab</a>.  <span id="more"></span></p>
+<p>The references for this post are:</p>
+<p><em>Elliptic Partial Differential Equations and Quasiconformal Mappings in the Plane (PMS-48)</em>. Kari Astala, Tadeusz Iwaniec &amp; Gaven Martin.</p>
+<p><em>Teichmuller mapping (T-map) and its applications to landmark matching registration.</em> Lui Lok Ming, Lam Ka Chun, Yau Shing-Tung &amp; Gu Xianfeng. </p>
+<p>The method can be used to compute the surface quasiconformal homeomorphism such as <a target="_blank" rel="noopener" href="http://www.math.cuhk.edu.hk/~lmlui/TMapMC.html">this</a>:</p>
+<img src="/2023/04/16/A-brief-introduction-to-the-Beltrami-equation-and-its-FEM-discretization-by-Di-Qiu/faceparametrization.png" class="">
+<p><strong>1.1. Measurable conformal structure</strong></p>
+<p>In one complex variable, holomorphicity is one of the most fundamental notions: suppose for simplicity we have a $ {\mathcal{C}^{1}}$ function $ {f=u+iv}$ defined on an open connected subset $ {\Omega}$ of $ {\mathbb{C}}$ (such is often called a <em>domain</em>). $ {f}$ is said to be holomorphic if its gradient satisfies the <em>Cauchy-Riemann equations</em>:</p>
+<p><span class="math display">\[\displaystyle \begin{array}{rcl} Df(z)=\begin{bmatrix}u_{x} &amp; u_{y}\\ v_{x} &amp; v_{y} \end{bmatrix} &amp; = &amp; \begin{bmatrix}u_{x} &amp; -v_{x}\\ v_{x} &amp; u_{x} \end{bmatrix} \end{array} \]</span></p>
+<p>where we have identified $ {\mathbb{C}}$ with $ {\mathbb{R}^{2}}$ in the usual manner. Note that the Jacobian <span class="math inline">\({J(f)=u_{x}^{2}+v_{x}^{2}\geq0}\)</span> and by Sard's lemma the set of vanishing Jacobian is of measure zero. Thus as a mapping between planar domains, $ {f}$ is orientation preserving almost everywhere. Let's verify that $ {f}$ in fact preserve oriented angles on the infinitesimal level, where we define the action of $ {f}$ at a point $ {z_{0}\in\Omega}$ to be multiplication by the complex derivative</p>
+<p><span class="math display">\[\displaystyle f&#39;(z_{0})=\frac{\partial}{\partial z}f\big|_{z_{0}}=\frac{1}{2}\left(u_{x}+v_{y}\right)+\frac{i}{2}\left(u_{y}-v_{x}\right)=u_{x}-iv_{x}. \]</span></p>
+<p>Recall that any complex number $ {a+ib}$ can be represented as</p>
+<p><span class="math display">\[\displaystyle \begin{pmatrix}a &amp; -b\\ b &amp; a \end{pmatrix}. \]</span></p>
+<p>(We used parenthese deliberately to distinguish representation of complex numbers from linear systems we consider). So this action is in effect applying the differential $ {df=\left(u_{x}+iv_{x}\right)dx+\left(u_{y}+iv_{y}\right)dy}$ to the vectors in the tangent plane at $ {z_{0}}$. Then that the action preserves angles follows immediately since the columns of the matrix are orthogonal, in the sense of Euclidean inner product. We can generalise the Euclidean inner product to other Riemannian metrics on $ {\Omega}$. Let $ {S(2)}$ denote the space of real-valued, symmetric, positive definite matrices with determinant one. Then a Riemannian metric on $ {\Omega}$ is defined as a mappping</p>
+<p><span class="math display">\[\displaystyle A:\Omega\rightarrow\mathbb{R}_{&gt;0}\cdot S(2). \]</span></p>
+<p><span class="math display">\[\displaystyle A(z)=\begin{bmatrix}a &amp; b\\ b &amp; c \end{bmatrix} \]</span></p>
+<p>This is the same as saying $ {A}$ is a symmetric positive definite $ {2}$-tensor field. On each tangent space at $ {z\in\Omega}$, the metric then defines an inner product</p>
+<p><span class="math display">\[\displaystyle \langle\cdot,\cdot\rangle_{A}=\langle\cdot,A(z)\cdot\rangle. \]</span></p>
+<p>We also say the Riemannian metric gives $ {\Omega}$ a <em>Riemannian structure</em>.</p>
+<blockquote>
+<p><strong>Remark 1</strong> <em>Typically, one talks about a Riemannian structure on a (real) smooth manifold, which is given by a smooth section of the $ {2}$-tensor bundle that is symmetric and positive definite, which is usually defined using charts. So strictly speaking, a Riemannian structure should come as an equivalence class of the metrics defined on these charts, which agree with each other whenerver the charts overlap. But here since $ {}$ has a global chart, there is seldom confusion.</em></p>
+</blockquote>
+<p>It is clear from the definition of the metric $ {A}$ that it is <em>conformally equivalent</em> to another metric</p>
+<p><span class="math display">\[\displaystyle G:\Omega\rightarrow S(2), \]</span></p>
+<p>namely, $ {G=\left(\det A\right)^{-1/2}A}$. We say that $ {G}$ is <em>bounded</em> if the set $ {\{G(z):z\in\Omega\}}$ is bounded in $ {\mathbb{R}^{4}}$, and <em>measurable</em> if individual slots in the matrix are mesurable functions from $ {\Omega}$ to $ {\mathbb{R}}$.</p>
+<blockquote>
+<p><strong>Definition 1</strong> <em>(Mesurable conformal structure) If $ {G:\Omega\rightarrow S(2)}$ is bounded and measurable, we call $ {G}$ a <em>measurable conformal structure</em> on $ {\Omega}$. If $ {H:\Omega'\rightarrow S(2)}$ is a measurable conformal strucrture on $ {\Omega'}$, a homeomorphism $ {f:\Omega\rightarrow\Omega'}$ is said to be conformal from $ {\left(\Omega,G\right)}$ to $ {\left(\Omega',H\right)}$ if $ {f}$ preserves angles, i.e. for each $ {z\in\Omega}$, and vectors $ {\xi,\zeta}$ in the tangent plane at $ {z}$,</em></p>
+<p><em><span class="math display">\[\displaystyle \langle f_{*}\xi,f_{*}\zeta\rangle_{H}=\phi\langle\xi,\zeta\rangle_{G} \ \ \ \ \ (1)\]</span></em></p>
+<p><em>for some positive measurable function $ {\phi}$.</em></p>
+</blockquote>
+<p>The conformal equivalence relation (1) can be translated to be a differential equation</p>
+<p><span class="math display">\[\displaystyle D^{T}f(z)H(f(z))Df(z)=\phi(z)G(z), \]</span></p>
+<p>where the derivative is interpreted in the weak sense. Note that taking determinants of both sides, we get $ {\phi(z)=J(z,f)}$, resulting the so-called <em>Beltrami system</em></p>
+<p><span class="math display">\[\displaystyle D^{T}f(z)H(f(z))Df(z)=J(z,f)G(z). \ \ \ \ \ (2)\]</span></p>
+<blockquote>
+<p><strong>Remark 2</strong> <em>If we take both $ {G=H=I}$, then we recover the usual conformal structure induced by the Euclidean metric. If $ {f=(u,v)}$ is conformal and differentiable, the equation (2) then reads</em></p>
+<p><em><span class="math display">\[\displaystyle \begin{bmatrix}u_{x} &amp; u_{y}\\ v_{x} &amp; v_{y} \end{bmatrix}^{T}\begin{bmatrix}1 &amp; 0\\ 0 &amp; 1 \end{bmatrix}\begin{bmatrix}u_{x} &amp; u_{y}\\ v_{x} &amp; v_{y} \end{bmatrix}=\left(u_{x}v_{y}-u_{y}v_{x}\right). \]</span></em></p>
+<p><em>When the Jacobian is non-singular, then after multiplying the inverse of $ {D^{T}f(z)}$ on both sides, we obtain the Cauchy-Riemann equation.</em></p>
+</blockquote>
+<p>The solution to the equation (2) is of importance. For example, if $ {\Omega=\Omega'=\mathbb{D}}$, then the existence of the solution then implies all Riemannian metrics on $ {\mathbb{D}}$ are conformlly equivalent. This is in fact part of the uniformization theorem. Of course, for general different domains the solution may or may not exist, as can be seen from various ``conformal invariants'' for these domains. But for the moment we shall work only formally, to illustrate the ideas.</p>
+<p><strong>1.2. The linear distortion</strong></p>
+<p>Given a homeomorphism $ {f:\Omega\rightarrow\Omega'}$, we ask how far it deviates from a conformal map between standard conformal structures. The geometric observation is that conformal mappings map circles to circles, so we define</p>
+<blockquote>
+<p><strong>Definition 2</strong> <em>The linear distortion of $ {f}$ is</em></p>
+<p><em><span class="math display">\[\displaystyle D(z,f)=\limsup_{r\rightarrow0}\frac{\max_{|\zeta|=r}|f(z+\zeta)-f(z)|}{\min_{|\zeta|=r}|f(z+\zeta)-f(z)|}. \]</span></em></p>
+</blockquote>
+<p>First, we see that $ {f}$ is conformal at $ {z}$ if and only if $ {D(z,f)=1}$. If $ {f}$ is differentiable at $ {z}$, we can write the differential $ {df=f_{z}dz+f_{\bar{z}}d\bar{z}}$, where</p>
+<p><span class="math display">\[\displaystyle \frac{\partial}{\partial z}f=\frac{1}{2}\left(u_{x}+v_{y}\right)+\frac{i}{2}\left(u_{y}-v_{x}\right);\quad\frac{\partial}{\partial\bar{z}}f=\frac{1}{2}\left(u_{x}-v_{y}\right)+\frac{i}{2}\left(u_{y}+v_{x}\right). \]</span></p>
+<p>At the tangent space level, by triangle inequality we have</p>
+<p><span class="math display">\[\displaystyle \left(|f_{z}|-|f_{\bar{z}}|\right)|dz|\leq|df|\leq\left(|f_{z}|+|f_{\bar{z}}|\right)|dz| \]</span></p>
+<p>where both equalities can be obtained. So in this case we have</p>
+<p><span class="math display">\[\displaystyle D(z,f)=\frac{|f_{z}|+|f_{\bar{z}}|}{|f_{z}|-|f_{\bar{z}}|}=\left(J(z,f)\right)^{-1}\left(|f_{z}|+|f_{\bar{z}}|\right)^{2},\]</span></p>
+<p>since <span class="math inline">\({J(z,f)=|f_{z}|^{2}-|f_{\bar{z}}|^{2}}\)</span>. Thus if we take conformal structure on $ {\Omega'}$ to be the standard one $ {H=I}$, the Beltrami system (2) then reads</p>
+<p><span class="math display">\[\displaystyle G_{f}(z)=\left(J(z,f)\right)^{-1}D^{T}f(z)Df(z)\]</span></p>
+<p>whenever $ {J(z,f)&gt;0}$. We call $ {G_{f}(z)}$ the distortion tensor of the mapping $ {f}$. Note that the operator norm of $ {G_{f}}$ is nothing but</p>
+<p><span class="math display">\[\displaystyle \|G_{f}\|=D(z,f)=\left(J(z,f)\right)^{-1}\left(|f_{z}|+|f_{\bar{z}}|\right)^{2}\]</span></p>
+<p>Assume the set of degeneracy Jacobian is of measure zero, we then have</p>
+<p><span class="math display">\[\displaystyle G_{f}(z):\Omega\rightarrow S(2) \]</span></p>
+<p>define a conformal structure on the domain $ {\Omega}$, where $ {f}$ is a conformal mapping from $ {(\Omega,G_{f})}$ to $ {(\Omega',I)}$.</p>
+<p> </p>
+<p><strong>1.3. Quasiconformal mappings and the Beltrami equation</strong></p>
+<p>Having only uniform control on the linear distortion does not guarantee the regularity of the mapping. This forces us to consider mappings in Sobolev spaces.</p>
+<blockquote>
+<p><strong>Definition 3</strong> <em>(Quasiconformal mapping) A homeomorphism $ {f:\Omega\rightarrow\Omega'}$ is called $ {K}$-quasiconformal if it is orientation-preserving, and $ {f\in W_{loc}^{1,2}(\Omega)}$, and the directional derivatives</em></p>
+<p><em><span class="math display">\[\displaystyle \max_{\alpha}|\partial_{\alpha}f(z)|\leq K\min_{\alpha}|\partial_{\alpha}f(z)| \ \ \ \ \ (3)\]</span></em></p>
+<p><em>for almost every $ {z\in\Omega}$.</em></p>
+</blockquote>
+<blockquote>
+<p><strong>Remark 3</strong> <em>Being merely a Sobolev function is not enough for a.e. differentiability, but only differentiable on lines a.e.. For this reason, in the above definition we had set</em></p>
+<p><em><span class="math display">\[\displaystyle \partial_{\alpha}f(z)=\cos(\alpha)f_{x}(z)+\sin(\alpha)f_{y}(z) \]</span></em></p>
+<p><em>for $ {\alpha\in[0,2\pi]}$. However, it is a theorem that if $ {f}$ is homeomorphic, then its derivative in in fact exists a.e.. So there is no trouble in the end.</em></p>
+</blockquote>
+<p>The inequality (3) can be also formulated as</p>
+<p><span class="math display">\[\displaystyle D(z,f)=\frac{|f_{z}|+|f_{\bar{z}}|}{|f_{z}|-|f_{\bar{z}}|}\leq K \]</span></p>
+<p>for almost every $ {z\in\Omega}$. This means quasiconformal mappings map infinitesimal circles to ellipses. Rearranging the above inquality, we get</p>
+<p><span class="math display">\[\displaystyle |f_{\bar{z}}(z)|\leq\frac{K-1}{K+1}|f_{z}(z)|. \]</span></p>
+<p>Writing $ {\mu_{f}(z)=f_{\bar{z}}(z)/f_{z}(z)}$ when $ {f_{z}(z)\neq0}$ (which only happens on a measure zero set), we get $ {|\mu_{f}(z)|\leq\frac{K-1}{K+1}&lt;1}$. Working backwards, we see that the equation</p>
+<p><span class="math display">\[\displaystyle \frac{\partial f}{\partial\bar{z}}=\mu(z)\frac{\partial f}{\partial z} \ \ \ \ \ (4)\]</span></p>
+<p>called the <em>Beltrami euqation</em>, where the <em>Beltrami coeffiecient</em> satisfies $ {\|\mu\|_{\infty}&lt;1}$, is equivalent to the inequality (3). The existence of the solution (as a $ {K}$-quasiconformal homeomorphism) to the equation (4) when $ {\|\mu\|_{\infty}&lt;1}$ is known as the <em>measurable Riemann mapping theorem</em>, and up to precomposition of comformal mappings is uniquely determined by $ {\mu:\Omega\rightarrow\Omega'}$. Let's convert (4) into matrix form. Write $ {\mu=\rho+i\tau}$. Separating the real and imaginary parts, we have</p>
+<p><span class="math display">\[\displaystyle \begin{bmatrix}\rho-1 &amp; \tau\\ \tau &amp; -(\rho+1) \end{bmatrix}\begin{bmatrix}u_{x}\\ u_{y} \end{bmatrix}=\begin{bmatrix}\rho+1 &amp; \tau\\ \tau &amp; 1-\rho \end{bmatrix}\begin{bmatrix}-v_{y}\\ v_{x} \end{bmatrix}. \]</span></p>
+<p>Since $ {\|\mu\|_{\infty}&lt;1}$ , <span class="math inline">\({\det\begin{bmatrix}\rho+1 &amp; \tau\\ \tau &amp; 1-\rho \end{bmatrix}=1-\rho^{2}-\tau^{2}&gt;0}\)</span> for amoslt every <span class="math inline">\({z\in\Omega}\)</span>. Hence we see that</p>
+<p><span class="math display">\[\displaystyle \begin{array}{rcl} \begin{bmatrix}-v_{y}\\ v_{x} \end{bmatrix} &amp; = &amp; \frac{1}{1-\rho^{2}-\tau^{2}}\begin{bmatrix}1-\rho &amp; -\tau\\ -\tau &amp; \rho+1 \end{bmatrix}\begin{bmatrix}\rho-1 &amp; \tau\\ \tau &amp; -(\rho+1) \end{bmatrix}\begin{bmatrix}u_{x}\\ u_{y} \end{bmatrix}. \end{array}\]</span></p>
+<p>Denote $ {C=\begin{bmatrix}\rho-1 &amp; \tau\\ \tau &amp; -(\rho+1) \end{bmatrix}}$ and observe that it is symmetric. Then the above is</p>
+<p><span class="math display">\[\displaystyle \begin{bmatrix}-v_{y}\\ v_{x} \end{bmatrix}=\frac{1}{1-\rho^{2}-\tau^{2}}C^{T}C\begin{bmatrix}u_{x}\\ u_{y} \end{bmatrix}.\]</span></p>
+<p>Finally, denote <span class="math inline">\({-A=\frac{-1}{1-\rho^{2}-\tau^{2}}C^{T}C=\frac{-1}{1-\rho^{2}-\tau^{2}}\begin{bmatrix}-(1-\rho)^{2}-\tau^{2} &amp; 2\tau\\ 2\tau &amp; -\tau^{2}-(\rho+1)^{2} \end{bmatrix}}\)</span> and it is easy to see that $ {A}$ is positive definite. Using the relation $ {v_{xy}=v_{yx}}$, we obtain a second order elliptic equation in divergence form:</p>
+<p><span class="math display">\[\displaystyle -\nabla\cdot(A\nabla u)=0, \ \ \ \ \ (5)\]</span></p>
+<p>where $ {\nabla\cdot(A\nabla)}$ is called the <em>generalized Laplacian operator</em>.</p>
+<blockquote>
+<p><strong>Remark 4</strong> <em>A solution $ {u}$ to the equation (5) can be used to determine $ {v}$ via the formula</em></p>
+<p><em><span class="math display">\[\displaystyle \begin{bmatrix}-v_{y}\\ v_{x} \end{bmatrix}=-A \begin{bmatrix}u_{x}\\ u_{y} \end{bmatrix}. \]</span></em></p>
+<p><em>And the function $ {f=u+iv}$ will thus be well defined, thanks to the <em>integrable vector field condition</em> $ {v_{xy}=v_{yx}}$.</em></p>
+</blockquote>
+<p>Below the fold, we shall describe in details the discretisation of the Boundary value problem associated with the equation (5).</p>
+<p><strong>1.4. Discretisation and implementation</strong></p>
+<p>To simplify matters (and thus avoid discussion about impacts of "conformal invaraints") we assume $ {\Omega}$ is topologically a disk, and it is approximated by <em>mesh</em>, denoted $ {\mathcal{M}}$, with the following data structure called the <em>indexed face set</em>. Each vertex is indexed by a unique integer, and a face $ {F}$ of the mesh is stored as a triple $ {[i_{F_{1}},i_{F_{2}},i_{F_{3}}]}$ of the indices of its vertices. We shall also assmue $ {[i_{F_{1}},i_{F_{2}},i_{F_{3}}]}$ is oriented counterclockwisely. The data should look like those in the following table. In practice, the number of faces is about twice the number of vertices.</p>
+<p><span class="math display">\[\begin{array} {cc} Vertex\ coordinates &amp; Triangles \\  (g_{1},h_{1})&amp; [i_{1},i_{2},i_{3}] \\ \cdots &amp; \cdots \\ (g_V, h_V) &amp; \cdots \\ &amp; \cdots \\ &amp; \cdots \\ &amp;  [i_{F_{1}},i_{F_{2}},i_{F_{3}}] \end{array}\]</span></p>
+<p>In this discrete formulation, we shall compute the resulting mesh $ {\mathcal{M}'}$ after applying the discretized version of the generalized Laplacian. It suffices to know where the vertices go, that is a map between vertices</p>
+<p><span class="math display">\[\displaystyle \begin{array}{rcl} v_{n}=(g_{n},h_{n}) &amp; \mapsto &amp; w_{n}=(s_{n},t_{n}). \end{array} \]</span></p>
+<p>We extend on each face $ {T=[i_{T_{1}},i_{T_{2}},i_{T_{3}}]}$ linearly to get a simplicial mapping</p>
+<p><span class="math display">\[\displaystyle f\big|_{T}(x,y)=\begin{bmatrix}u\big|_{T}(x,y)\\ v\big|_{T}(x,y) \end{bmatrix}=\begin{bmatrix}a_{T}x+b_{T}y+r_{T}\\ c_{T}x+d_{T}y+s_{T} \end{bmatrix}. \]</span></p>
+<p>Then on each face we have the following approximation:</p>
+<p><span class="math display">\[\displaystyle u_{x}\big|_{T}=a_{T};\quad u_{y}\big|_{T}=b_{T};\quad v_{x}\big|_{T}=c_{T};\quad v_{y}\big|_{T}=d_{T}. \]</span></p>
+<p>Let's now calculate these from coordinates of the vertices of the faces $ {T}$ and $ {f(T)}$. It suffices to consider two edges of the triangle. Suppose $ {T}$ and $ {f(T)}$ have vertices $ {[v_{i},v_{j},v_{k}]}$ and $ {[w_{i},w_{j},w_{k}]}$ respectively. We consider the oriented edges $ {v_{j}-v_{i}}$ and $ {v_{k}-v_{i}}$ coinsident at $ {v_{i}}$. The simplicial mapping should map these edges to the corresponding oriented edges $ {w_{j}-w_{i}}$ and $ {w_{k}-w_{i}}$, i.e.</p>
+<p><span class="math display">\[\displaystyle \begin{bmatrix}a_{T} &amp; b_{T}\\ c_{T} &amp; d_{T} \end{bmatrix}\begin{bmatrix}g_{j}-g_{i} &amp; g_{k}-g_{i}\\ h_{j}-h_{i} &amp; h_{k}-h_{i} \end{bmatrix}=\begin{bmatrix}s_{j}-s_{i} &amp; s_{k}-s_{i}\\ t_{j}-t_{i} &amp; t_{k}-t_{i} \end{bmatrix} \]</span></p>
+<p>The determinant of $ {\begin{bmatrix}g_{j}-g_{i} &amp; g_{k}-g_{i}\\ h_{j}-h_{i} &amp; h_{k}-h_{i} \end{bmatrix}}$is just the signed area of the parallelogram, which is $ {2\cdot Area(T)}$. Note that we have chosen the same orientation for every $ {T}$ so the determinants calculated for each face are positive. Thus,</p>
+<p><span class="math display">\[\displaystyle \begin{eqnarray*} \begin{bmatrix}a_{T} &amp; b_{T}\\ c_{T} &amp; d_{T}\end{bmatrix} &amp; = &amp; \frac{1}{2\cdot Area(T)} \begin{bmatrix}s_{j}-s_{i} &amp; s_{k}-s_{i}\\ t_{j}-t_{i} &amp; t_{k}-t_{i}\end{bmatrix} \begin{bmatrix}h_{k}-h_{i} &amp; g_{i}-g_{k}\\ h_{i}-h_{j} &amp; g_{j}-g_{i} \end{bmatrix} \\ &amp; = &amp; \begin{bmatrix}A_{T}^{i}s_{i}+A_{T}^{j}s_{j}+A_{T}^{k}s_{k} &amp; B_{T}^{i}s_{i}+B_{T}^{j}s_{j}+B_{T}^{k}s_{k}\\ A_{T}^{i}t_{i}+A_{T}^{j}t_{j}+A_{T}^{k}t_{k} &amp; B_{T}^{i}t_{i}+B_{T}^{j}t_{j}+B_{T}^{k}t_{k} \end{bmatrix}.\end{eqnarray*} \ \ \ \ \ (6)\]</span></p>
+<p>where</p>
+<p><span class="math display">\[\displaystyle A_{T}^{i}=\left(h_{j}-h_{k}\right)/2\cdot Area(T);\quad A_{T}^{j}=\left(h_{k}-h_{i}\right)/2\cdot Area(T);\quad A_{T}^{k}=\left(h_{i}-h_{j}\right)/2\cdot Area(T); \]</span></p>
+<p><span class="math display">\[\displaystyle B_{T}^{i}=\left(g_{k}-g_{j}\right)/2\cdot Area(T);\quad B_{T}^{j}=\left(g_{i}-g_{k}\right)/2\cdot Area(T);\quad B_{T}^{k}=\left(g_{j}-g_{i}\right)/2\cdot Area(T). \]</span></p>
+<p>The above gives in effect the discretisation of the gradient operator. The discretisation of the divergence operator is slightly more complicated. Here we want to take the diverence of a vector field defined on the faces, namely $ {(-d,c)_{T}}$, and the divergence is then a function of the vertices (roughly speaking, while gradient is applied on the <em>graph</em>, the divergence is applied on the <em>dual graph</em>). Since divergence measures the net flux across the boundary normalized by area, we define the divergence of any vector field $ {(X_{1},X_{2})_{T}}$ on faces to be</p>
+<p><span class="math display">\[\displaystyle \text{Div}(X_{1},X_{2})(v_{i})=\sum_{T\in N_{i}}Area(T) \cdot A_{T}^{i}X_{1}(T)+Area(T) \cdot B_{T}^{i}X_{2}(T). \]</span></p>
+<p>Here <span class="math inline">\(N_{i}\)</span> denote the set of faces which contain the vertex indexed with <span class="math inline">\(i\)</span>. This is a right definition, since it is easy to check using (1) for each $ {v_{i}}$</p>
+<p><span class="math display">\[\displaystyle \begin{array}{rcl} \text{Div}(-d,c)(v_{i}) &amp; = &amp; \sum_{T\in N_{i}}-Area(T) \cdot A_{T}^{i}d_{T}+Area(T) \cdot B_{T}^{i}c_{T}\\ &amp; = &amp; \sum_{T\in N_{1}}- Area(T) \cdot A_{T}^{i}\left( B_{T}^{i}t_{i}+ B_{T}^{j}t_{j}+B_{T}^{k}t_{k}\right)+\\ &amp; &amp; \quad\quad Area(T) \cdot B_{T}^{i}\left(A_{T}^{i}t_{i}+ A_{T}^{j}t_{j}+A_{T}^{k}t_{k}\right)\\ &amp; = &amp; 0. \end{array}\]</span></p>
+<p>And similarly $ {\text{Div}(-b,a)(v_{i})=0}$. Finally, according to the equation (5), we have its discrete analog</p>
+<p><span class="math display">\[\displaystyle \text{Div}\left\{ A \begin{bmatrix}B_{T}^{i}s_{i}+B_{T}^{j}s_{j}+B_{T}^{k}s_{k}\\ B_{T}^{i}t_{i}+B_{T}^{j}t_{j}+B_{T}^{k}t_{k} \end{bmatrix}\right\} =0\]</span></p>
+<p>as a linear system in $ {s_{n}}$'s ready to solve (often in the least square sense).</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/complex-analysis/" rel="tag"># complex analysis</a>
+              <a href="/tags/discrete-conformal-geometry/" rel="tag"># discrete conformal geometry</a>
+              <a href="/tags/numerical-methods/" rel="tag"># numerical methods</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/05/26/%E9%98%BB%E6%AD%A2%E7%89%B9%E5%AE%9A%E8%BD%AF%E4%BB%B6%E5%8C%85%E5%8D%87%E7%BA%A7%E7%9A%84%E6%96%B9%E6%B3%95/" rel="prev" title="阻止特定软件包升级的方法">
+      <i class="fa fa-chevron-left"></i> 阻止特定软件包升级的方法
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Ki Qiguang Chen"
+      src="/images/blog-logo.jpg">
+  <p class="site-author-name" itemprop="name">Ki Qiguang Chen</p>
+  <div class="site-description" itemprop="description">梦想就像一颗蛋<br>由外而内打破是压力<br>由内而外打破是生命</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">30</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">12</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2018 – 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Ki Qiguang Chen</span>
+</div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+
+</body>
+</html>
